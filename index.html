@@ -1,404 +1,394 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>即時業績儀表板</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<title>美客麗爾業績報表</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <style>
   :root {
-    --primary-bg: #f8f9fa;
+    --primary: #4e54c8;
+    --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --bg-color: #f2f4f8;
     --card-bg: #ffffff;
-    --text-primary: #2c3e50;
-    --accent-color: #3498db;
-    --success-color: #2ecc71;
-    --warning-color: #f1c40f;
+    --text-main: #2d3436;
+    --text-sub: #636e72;
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
   }
 
-  body {
-    background-color: var(--primary-bg);
-    font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
-    color: var(--text-primary);
-  }
-
-  /* 登入層 */
-  #login-section {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  }
-  .login-card {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 2.5rem;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-  }
-
-  /* 主儀表板 */
-  #dashboard-section { display: none; padding-bottom: 50px; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   
-  .navbar-custom {
-    background: #fff;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    padding: 1rem;
-  }
-  .page-title { font-weight: 800; color: #34495e; margin: 0; }
-
-  /* 篩選區塊 */
-  .filter-bar {
-    background: #fff;
-    margin: 20px auto;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    align-items: end;
+  body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", Roboto, sans-serif; 
+    background: var(--bg-color); 
+    margin: 0; padding: 0; 
+    font-size: 16px; color: var(--text-main);
+    padding-bottom: 60px;
   }
 
-  /* 數據卡片 */
-  .kpi-card {
-    background: #fff;
-    border-radius: 15px;
-    padding: 20px;
-    border: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-    transition: transform 0.2s;
-    height: 100%;
-    position: relative;
-    overflow: hidden;
+  header {
+    background: var(--primary-grad);
+    padding: 25px 20px 40px 20px; color: white; text-align: center;
+    border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;
+    box-shadow: 0 4px 15px rgba(78, 84, 200, 0.4); margin-bottom: -20px;
   }
-  .kpi-card:hover { transform: translateY(-3px); }
-  .kpi-card::before {
-    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
-  }
-  .kpi-total::before { background: var(--accent-color); }
-  .kpi-count::before { background: var(--success-color); }
-  .kpi-qty::before { background: var(--warning-color); }
+  header h2 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 1px; }
 
-  .kpi-label { font-size: 0.9rem; color: #95a5a6; font-weight: 600; text-transform: uppercase; }
-  .kpi-value { font-size: 2rem; font-weight: 800; color: #2c3e50; margin-top: 5px; }
-  .kpi-icon { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 3rem; opacity: 0.1; }
+  .container { width: 94%; max-width: 600px; margin: 0 auto; position: relative; z-index: 10; }
 
-  /* 圖表與表格區 */
-  .content-card {
-    background: #fff;
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-  }
-  .card-header-custom {
-    font-weight: 700; font-size: 1.1rem; margin-bottom: 15px; border-left: 4px solid #667eea; padding-left: 10px;
+  .card {
+    background: var(--card-bg); border-radius: 16px; padding: 20px;
+    box-shadow: var(--shadow); margin-bottom: 16px;
   }
 
-  .table-custom th { background: #f8f9fa; font-weight: 600; }
-  .table-custom td { vertical-align: middle; }
+  .input-label { font-size: 14px; color: var(--text-sub); margin-bottom: 6px; display: block; font-weight: bold; }
+  
+  input[type="date"] {
+    width: 100%; height: 56px; font-size: 18px; padding: 0 12px;
+    border: 1px solid #ddd; border-radius: 10px; background: #fdfdfd;
+    outline: none; -webkit-appearance: none; color: #333; margin-bottom: 12px;
+  }
+  input[type="date"]:focus { border-color: #764ba2; background: #fff; }
 
-  /* Loading */
-  .loading-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(255,255,255,0.8); z-index: 9999;
-    display: none; align-items: center; justify-content: center; flex-direction: column;
-    backdrop-filter: blur(5px);
+  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+  .btn-full { grid-column: span 2; }
+  
+  button {
+    border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
+    height: 56px; cursor: pointer; background: #eef1f6; color: #555;
+    width: 100%; transition: 0.1s; display: flex; align-items: center; justify-content: center;
   }
-  .loading-spinner {
-    width: 3rem; height: 3rem; border: 4px solid #f3f3f3;
-    border-top: 4px solid #667eea; border-radius: 50%;
-    animation: spin 1s linear infinite;
+  button.primary {
+    background: var(--primary-grad); color: white; font-size: 18px;
+    box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);
   }
-  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  button:active { transform: scale(0.97); opacity: 0.9; }
 
-  @media(max-width: 768px) {
-    .filter-bar { flex-direction: column; }
-    .filter-bar > div, .filter-bar > button { width: 100%; }
+  .section-title { font-size: 18px; font-weight: 800; margin: 25px 4px 10px 4px; color: #333; }
+  
+  .total-card { background: var(--primary-grad); color: white; text-align: center; }
+  .total-val { font-size: 36px; font-weight: 800; margin: 5px 0 15px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+  .total-stats {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    background: rgba(255,255,255,0.2); border-radius: 10px; padding: 12px; backdrop-filter: blur(4px);
   }
+  .stat-item { border-right: 1px solid rgba(255,255,255,0.3); }
+  .stat-item:last-child { border: none; }
+  .s-val { font-size: 18px; font-weight: 700; display: block; }
+  .s-lbl { font-size: 13px; opacity: 0.9; }
+
+  .floor-item {
+    padding: 18px; background: white; border-radius: 12px;
+    margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    cursor: pointer; border-left: 5px solid #764ba2;
+  }
+  .floor-item:active { background: #fafafa; }
+  .f-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .f-name { font-size: 20px; font-weight: 700; color: #333; }
+  .f-amount { font-size: 22px; font-weight: 800; color: #764ba2; }
+  .f-sub { font-size: 14px; color: #666; display: flex; justify-content: space-between; }
+
+  .back-btn { 
+    background: #e0e0e0; color: #333; height: 44px; width: auto; 
+    padding: 0 20px; margin-bottom: 15px; border-radius: 22px; 
+  }
+
+  .order-card {
+    background: white; border-radius: 12px; padding: 16px; margin-bottom: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06); border: 1px solid #eee;
+  }
+  .ord-header { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #eee; }
+  .ord-row { display: flex; justify-content: space-between; margin-bottom: 4px; align-items: baseline; }
+  .ord-id { font-weight: 800; font-size: 16px; color: #333; }
+  .ord-total { font-weight: 800; font-size: 18px; color: #764ba2; }
+  .ord-meta { font-size: 14px; color: #666; }
+
+  .tbl-header {
+    display: flex; padding: 6px 0; border-bottom: 2px solid #f0f0f0;
+    font-size: 13px; color: #888; font-weight: bold; margin-bottom: 6px;
+  }
+  .tbl-row {
+    display: flex; padding: 8px 0; border-bottom: 1px solid #f9f9f9;
+    font-size: 14px; color: #333; align-items: center;
+  }
+  .tbl-row:last-child { border-bottom: none; }
+
+  .c1 { width: 18%; font-size: 12px; color: #666; word-break: break-all; padding-right: 2px; }
+  .c2 { width: 34%; font-weight: 600; line-height: 1.3; padding-right: 4px; }
+  .c3 { width: 10%; text-align: center; }
+  .c4 { width: 18%; text-align: right; font-size: 13px; }
+  .c5 { width: 20%; text-align: right; font-weight: 700; }
+  .disc-txt { font-size: 12px; color: #e53935; text-align: right; margin-top: 2px; }
+
+  #loading { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(255,255,255,0.9); z-index: 999; 
+    display: none; justify-content: center; align-items: center; flex-direction: column;
+  }
+  .spinner { width: 40px; height: 40px; border: 4px solid #eee; border-top-color: #764ba2; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
-<div id="login-section">
-  <div class="login-card">
-    <div class="mb-4">
-      <i class="fa-solid fa-chart-line fa-3x text-primary"></i>
-    </div>
-    <h3 class="fw-bold mb-4">業績儀表板</h3>
-    <input type="password" id="inpPassword" class="form-control form-control-lg mb-3" placeholder="請輸入訪問密碼">
-    <button onclick="doLogin()" class="btn btn-primary btn-lg w-100 fw-bold">登 入</button>
-  </div>
-</div>
+<header>
+  <h2>美客麗爾</h2>
+  <div style="font-size: 14px; opacity: 0.9; margin-top: 5px;">銷售業績報表</div>
+</header>
 
-<div id="dashboard-section">
-  <div class="navbar-custom d-flex justify-content-between align-items-center sticky-top">
-    <h4 class="page-title"><i class="fa-solid fa-store me-2"></i>即時業績總覽</h4>
-    <button onclick="logout()" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-right-from-bracket"></i></button>
-  </div>
-
-  <div class="container-fluid px-lg-5">
-    
-    <div class="filter-bar">
-      <div style="flex: 1;">
-        <label class="form-label small fw-bold text-muted">開始日期</label>
-        <input type="date" id="startDate" class="form-control">
-      </div>
-      <div style="flex: 1;">
-        <label class="form-label small fw-bold text-muted">結束日期</label>
-        <input type="date" id="endDate" class="form-control">
-      </div>
-      <button onclick="fetchData()" class="btn btn-primary fw-bold px-4" style="height: 38px;">
-        <i class="fa-solid fa-magnifying-glass me-2"></i>查詢
-      </button>
-    </div>
-
-    <div class="row g-4 mb-4">
-      <div class="col-md-4">
-        <div class="kpi-card kpi-total">
-          <div class="kpi-label">總營業額 (Total Sales)</div>
-          <div class="kpi-value text-primary" id="kpi-total">$0</div>
-          <i class="fa-solid fa-sack-dollar kpi-icon"></i>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="kpi-card kpi-count">
-          <div class="kpi-label">總交易筆數 (Transactions)</div>
-          <div class="kpi-value text-success" id="kpi-count">0</div>
-          <i class="fa-solid fa-receipt kpi-icon"></i>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="kpi-card kpi-qty">
-          <div class="kpi-label">總銷售件數 (Quantity)</div>
-          <div class="kpi-value text-warning" id="kpi-qty">0</div>
-          <i class="fa-solid fa-shirt kpi-icon"></i>
-        </div>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col-lg-5 mb-4">
-        <div class="content-card h-100">
-          <div class="card-header-custom">門市業績佔比</div>
-          <canvas id="salesChart"></canvas>
-        </div>
-      </div>
-
-      <div class="col-lg-7 mb-4">
-        <div class="content-card h-100">
-          <div class="card-header-custom">各店詳細數據</div>
-          <div class="table-responsive">
-            <table class="table table-custom table-hover">
-              <thead>
-                <tr>
-                  <th>門市名稱</th>
-                  <th class="text-end">筆數</th>
-                  <th class="text-end">件數</th>
-                  <th class="text-end">營業額</th>
-                  <th>銷售人員</th>
-                </tr>
-              </thead>
-              <tbody id="table-body">
-                </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
+<div class="container">
   
+  <div class="card" id="queryCard">
+    <label class="input-label">開始日期</label>
+    <input type="date" id="startDate">
+    <label class="input-label">結束日期</label>
+    <input type="date" id="endDate">
+    
+    <div class="btn-grid">
+      <button class="primary btn-full" onclick="getReport()">🔍 查詢業績</button>
+      <button onclick="getToday()">今天</button>
+      <button onclick="getYesterday()">昨天</button>
+      <button class="btn-full" onclick="getThisMonth()">📅 本月累積</button>
+    </div>
+  </div>
+
+  <div id="result"></div>
+  
+  <div class="card" id="chartCard" style="display:none;">
+    <canvas id="chart" height="250"></canvas>
   </div>
 </div>
 
-<div class="loading-overlay" id="loading">
-  <div class="loading-spinner mb-3"></div>
-  <div class="fw-bold text-muted">資料讀取中，請稍候...</div>
+<div id="loading">
+  <div class="spinner"></div>
+  <div style="font-weight:bold; color:#555;">處理中...</div>
 </div>
 
 <script>
-  // ==========================================
-  // ⚠️ 請填入您的 GAS 部署網址 (exec 結尾)
-  // ==========================================
-  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzzeldQQQxhFEFTjlB250nRxSTyDzQzgEEPukZAbm4dzfpUAPK_g5W_RP30ScyNggHviw/exec"; 
+// ===============================================
+// ✅ 設定：請填入您的 GAS 部署網址 (exec 結尾)
+// ===============================================
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzzeldQQQxhFEFTjlB250nRxSTyDzQzgEEPukZAbm4dzfpUAPK_g5W_RP30ScyNggHviw/exec";
 
-  // 初始化日期
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('startDate').value = today;
-  document.getElementById('endDate').value = today;
+let chart;
 
-  // Chart 實例
-  let myChart = null;
-
-  // 登入邏輯
-  function doLogin() {
-    const pw = document.getElementById('inpPassword').value;
-    if(!pw) return Swal.fire('請輸入密碼');
-
-    showLoading(true);
-    callApi({ op: 'login', pw: pw }).then(res => {
-      showLoading(false);
-      if(res.status === 'success') {
-        localStorage.setItem('dashboard_pw', pw);
-        switchView('dashboard');
-        fetchData(); // 登入成功後自動查詢
-      } else {
-        Swal.fire('登入失敗', '密碼錯誤', 'error');
-      }
+// === API 呼叫函式 (取代 google.script.run) ===
+async function callApi(payload) {
+  try {
+    const res = await fetch(GAS_API_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
     });
+    return await res.json();
+  } catch (e) {
+    console.error(e);
+    return { error: '連線錯誤，請檢查網路' };
   }
+}
 
-  // 自動登入檢查
-  window.onload = () => {
-    const savedPw = localStorage.getItem('dashboard_pw');
-    if(savedPw) {
-      document.getElementById('inpPassword').value = savedPw;
-      doLogin();
-    }
-  };
+// === 功能區 ===
+async function getReport() {
+  const s = document.getElementById("startDate").value;
+  const e = document.getElementById("endDate").value;
+  if(!s||!e) return alert("請選擇日期區間");
+  
+  showLoading(true);
+  const data = await callApi({ op: 'report', startDate: s, endDate: e });
+  renderReport(data);
+}
 
-  function logout() {
-    localStorage.removeItem('dashboard_pw');
-    location.reload();
+function getToday() {
+  const t = new Date();
+  const todayStr = fmtDate(t);
+  document.getElementById("startDate").value = todayStr;
+  document.getElementById("endDate").value = todayStr;
+  getReport();
+}
+
+function getYesterday() {
+  const d = new Date(); d.setDate(d.getDate()-1);
+  const y = fmtDate(d);
+  document.getElementById("startDate").value = y;
+  document.getElementById("endDate").value = y;
+  getReport();
+}
+
+function getThisMonth() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = now;
+  
+  document.getElementById("startDate").value = fmtDate(start);
+  document.getElementById("endDate").value = fmtDate(end);
+  getReport();
+}
+
+function fmtDate(d) {
+    // 解決時區問題，確保日期準確
+    const offset = d.getTimezoneOffset() * 60000;
+    return new Date(d.getTime() - offset).toISOString().split('T')[0];
+}
+
+function showLoading(b) {
+  document.getElementById("loading").style.display = b ? "flex" : "none";
+}
+
+// === 渲染總表 ===
+function renderReport(data) {
+  showLoading(false);
+  if(data.error) {
+    document.getElementById("result").innerHTML = `<div class="card" style="text-align:center; padding:30px; color:red;">❌ ${data.error}</div>`;
+    return;
   }
-
-  // 查詢資料
-  function fetchData() {
-    const pw = localStorage.getItem('dashboard_pw');
-    const start = document.getElementById('startDate').value;
-    const end = document.getElementById('endDate').value;
-
-    if(!pw) return logout();
-
-    showLoading(true);
-    callApi({ 
-      op: 'getSummary', 
-      pw: pw, 
-      startDate: start, 
-      endDate: end 
-    }).then(res => {
-      showLoading(false);
-      if(res.status === 'success') {
-        renderDashboard(res.data);
-      } else {
-        Swal.fire('錯誤', res.msg || '讀取失敗', 'error');
-      }
-    });
-  }
-
-  // 渲染畫面
-  function renderDashboard(data) {
-    const { rows, grandTotal } = data;
-
-    // 1. 更新 KPI
-    animateValue("kpi-total", grandTotal.total, "$");
-    animateValue("kpi-count", grandTotal.count, "");
-    animateValue("kpi-qty", grandTotal.qty, "");
-
-    // 2. 更新表格
-    const tbody = document.getElementById('table-body');
-    tbody.innerHTML = '';
-    
-    // 依營業額排序
-    rows.sort((a,b) => b.total - a.total);
-
-    rows.forEach(r => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="fw-bold text-primary">${r.store}</td>
-        <td class="text-end">${fmt(r.count)}</td>
-        <td class="text-end">${fmt(r.qty)}</td>
-        <td class="text-end fw-bold text-success">$${fmt(r.total)}</td>
-        <td class="small text-muted text-truncate" style="max-width: 150px;" title="${r.sales}">${r.sales}</td>
+  
+  const res = document.getElementById("result");
+  
+  // 1. 合計
+  let html = `<div class="section-title">總計概覽 (${data.start} ~ ${data.end})</div>`;
+  html += `
+    <div class="card total-card">
+      <div style="font-size:14px; opacity:0.9;">總銷售金額</div>
+      <div class="total-val">$${data.totalAmount.toLocaleString()}</div>
+      <div class="total-stats">
+        <div class="stat-item"><span class="s-val">${data.totalCount}</span><span class="s-lbl">筆數</span></div>
+        <div class="stat-item"><span class="s-val">${data.totalQty}</span><span class="s-lbl">件數</span></div>
+        <div class="stat-item"><span class="s-val">$${data.totalCount?Math.round(data.totalAmount/data.totalCount).toLocaleString():0}</span><span class="s-lbl">客單</span></div>
+      </div>
+    </div>
+  `;
+  
+  // 2. 門市列表
+  html += `<div class="section-title">門市明細</div>`;
+  const floors = Object.keys(data.floors);
+  if(floors.length === 0) {
+    html += `<div class="card" style="text-align:center; color:#999;">無資料</div>`;
+  } else {
+    floors.forEach(f => {
+      const d = data.floors[f];
+      const staff = d.staff && d.staff.length ? d.staff.join("、") : "—";
+      html += `
+        <div class="floor-item" onclick="showDetails('${f}','${data.start}','${data.end}')">
+          <div class="f-top">
+            <span class="f-name">${f}</span>
+            <span class="f-amount">$${d.total.toLocaleString()}</span>
+          </div>
+          <div class="f-sub">
+            <span>筆數 ${d.count} / 件數 ${d.qty}</span>
+            <span style="color:#764ba2; font-weight:bold;">查看明細 ᐳ</span>
+          </div>
+          <div style="margin-top:6px; font-size:13px; color:#888; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">人員：${staff}</div>
+        </div>
       `;
-      tbody.appendChild(tr);
     });
+  }
+  res.innerHTML = html;
+  
+  document.getElementById("chartCard").style.display="block";
+  drawChart(data);
+}
 
-    // 3. 更新圖表
-    updateChart(rows);
+function drawChart(data){
+  const ctx = document.getElementById("chart").getContext("2d");
+  const lbls = Object.keys(data.floors);
+  const sales = lbls.map(k=>data.floors[k].total);
+  const qtys = lbls.map(k=>data.floors[k].qty);
+  
+  if(chart) chart.destroy();
+  chart = new Chart(ctx,{
+    type:"bar",
+    data:{
+      labels:lbls,
+      datasets:[
+        { label:"金額", data:sales, backgroundColor:"#667eea", borderRadius:6, yAxisID:'y' },
+        { label:"件數", data:qtys, type:"line", borderColor:"#ff7675", borderWidth:3, tension:0.3, yAxisID:'y1' }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      scales:{
+        x:{ grid:{display:false}, ticks:{font:{size:13}} },
+        y:{ beginAtZero:true, ticks:{callback:v=>'$'+v/1000+'k'} },
+        y1:{ beginAtZero:true, position:'right', grid:{display:false} }
+      }
+    }
+  });
+}
+
+// === 明細頁 (改用 API) ===
+async function showDetails(floor,start,end){
+  showLoading(true);
+  // 呼叫 API 取得明細
+  const orders = await callApi({ op: 'detail', floor: floor, startDate: start, endDate: end });
+  renderDetail(floor, orders, start, end);
+  showLoading(false);
+}
+
+function renderDetail(floor,orders,start,end){
+  document.getElementById("chartCard").style.display="none";
+  window.scrollTo(0,0);
+  
+  let html = `
+    <button class="back-btn" onclick="getReport()">⬅ 返回總表</button>
+    <div class="section-title" style="margin-top:0;">${floor}</div>
+    <div style="margin:-5px 5px 15px 5px; font-size:14px; color:#666;">${start} ~ ${end} (共 ${orders.length} 筆)</div>
+  `;
+
+  if(!orders || orders.length===0){
+    html+=`<div class="card" style="text-align:center; padding:30px;">無明細資料</div>`;
+    document.getElementById("result").innerHTML=html; return;
   }
 
-  function updateChart(rows) {
-    const ctx = document.getElementById('salesChart').getContext('2d');
-    const labels = rows.map(r => r.store);
-    const data = rows.map(r => r.total);
+  orders.forEach(o => {
+    const total = Math.round(o.total).toLocaleString();
+    
+    html += `<div class="order-card">`;
+    
+    html += `
+      <div class="ord-header">
+        <div class="ord-row">
+          <span class="ord-id">訂單：${o.id}</span>
+          <span class="ord-total">總計：${total}</span>
+        </div>
+        <div class="ord-meta">時間：${o.time}</div>
+        <div class="ord-meta">銷售：${o.staff||"—"} ${o.remark ? "｜ 備註："+o.remark : ""}</div>
+      </div>
+    `;
 
-    if(myChart) myChart.destroy();
+    html += `
+      <div class="tbl-header">
+        <div class="c1">料號</div>
+        <div class="c2">商品</div>
+        <div class="c3">數量</div>
+        <div class="c4">單價</div>
+        <div class="c5">小計</div>
+      </div>
+    `;
 
-    myChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: '營業額',
-          data: data,
-          backgroundColor: [
-            'rgba(54, 162, 235, 0.6)',
-            'rgba(255, 99, 132, 0.6)',
-            'rgba(255, 206, 86, 0.6)',
-            'rgba(75, 192, 192, 0.6)'
-          ],
-          borderColor: [
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 99, 132, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)'
-          ],
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false }
-        },
-        scales: {
-          y: { beginAtZero: true }
-        }
+    html += `<div>`;
+    o.items.forEach(item => {
+      const qty = item.G || "";
+      const price = item.H || "";
+      const sub = item.I ? parseFloat(item.I).toLocaleString() : (item.I||"");
+      const disc = item.D ? parseFloat(item.D) : 0;
+      
+      html += `
+        <div class="tbl-row">
+          <div class="c1">${item.C||""}</div>
+          <div class="c2">${item.F||""}</div>
+          <div class="c3">${qty}</div>
+          <div class="c4">${price}</div>
+          <div class="c5">${sub}</div>
+        </div>
+      `;
+      if(disc) {
+        html += `<div class="disc-txt">NT：$${disc}</div>`;
       }
     });
-  }
+    html += `</div></div>`;
+  });
 
-  // API 呼叫 (使用 POST)
-  async function callApi(payload) {
-    try {
-      const res = await fetch(GAS_API_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
-      return await res.json();
-    } catch (e) {
-      console.error(e);
-      return { status: 'error', msg: '連線錯誤' };
-    }
-  }
-
-  // 工具函式
-  function switchView(view) {
-    document.getElementById('login-section').style.display = view === 'login' ? 'flex' : 'none';
-    document.getElementById('dashboard-section').style.display = view === 'dashboard' ? 'block' : 'none';
-  }
-
-  function showLoading(show) {
-    document.getElementById('loading').style.display = show ? 'flex' : 'none';
-  }
-
-  function fmt(n) {
-    return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  }
-
-  function animateValue(id, end, prefix) {
-    const obj = document.getElementById(id);
-    obj.innerText = prefix + fmt(end);
-    // 簡單動畫效果可依需求增加
-  }
-
+  document.getElementById("result").innerHTML = html;
+}
 </script>
 </body>
 </html>

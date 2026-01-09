@@ -1,394 +1,657 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>美客麗爾業績報表</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-  :root {
-    --primary: #4e54c8;
-    --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --bg-color: #f2f4f8;
-    --card-bg: #ffffff;
-    --text-main: #2d3436;
-    --text-sub: #636e72;
-    --shadow: 0 4px 20px rgba(0,0,0,0.08);
-  }
-
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>全能發票小幫手</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   
-  body { 
-    font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", Roboto, sans-serif; 
-    background: var(--bg-color); 
-    margin: 0; padding: 0; 
-    font-size: 16px; color: var(--text-main);
-    padding-bottom: 60px;
-  }
+  <style>
+    /* 樣式保持原樣，完全不需要更動 */
+    :root {
+      --bg-gradient: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+      --glass-bg: rgba(255, 255, 255, 0.9);
+      --glass-border: rgba(255, 255, 255, 0.8);
+      --primary-color: #6366f1;
+      --text-main: #334155;
+      --text-muted: #64748b;
+      --inv-border: #1e293b;
+      --fill-color: #2563eb;
+      --print-font: "Noto Serif TC", "BiauKai", "KaiTi", serif;
+    }
 
-  header {
-    background: var(--primary-grad);
-    padding: 25px 20px 40px 20px; color: white; text-align: center;
-    border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;
-    box-shadow: 0 4px 15px rgba(78, 84, 200, 0.4); margin-bottom: -20px;
-  }
-  header h2 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 1px; }
+    body {
+      background: var(--bg-gradient);
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+      min-height: 100vh;
+      color: var(--text-main);
+      padding-bottom: 50px;
+    }
 
-  .container { width: 94%; max-width: 600px; margin: 0 auto; position: relative; z-index: 10; }
+    .control-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+      position: sticky; top: 30px; z-index: 100;
+    }
 
-  .card {
-    background: var(--card-bg); border-radius: 16px; padding: 20px;
-    box-shadow: var(--shadow); margin-bottom: 16px;
-  }
+    .panel-title {
+      font-weight: 800; color: #1e293b; letter-spacing: -0.5px;
+      margin-bottom: 25px; display: flex; align-items: center; gap: 12px;
+    }
 
-  .input-label { font-size: 14px; color: var(--text-sub); margin-bottom: 6px; display: block; font-weight: bold; }
-  
-  input[type="date"] {
-    width: 100%; height: 56px; font-size: 18px; padding: 0 12px;
-    border: 1px solid #ddd; border-radius: 10px; background: #fdfdfd;
-    outline: none; -webkit-appearance: none; color: #333; margin-bottom: 12px;
-  }
-  input[type="date"]:focus { border-color: #764ba2; background: #fff; }
+    .form-label { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px; }
+    .form-control, .input-group-text {
+      border-radius: 12px; border: 1px solid #cbd5e1;
+      padding: 12px 16px; font-size: 15px; background: #fff;
+      transition: all 0.2s;
+    }
+    .form-control:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+      outline: none;
+    }
 
-  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
-  .btn-full { grid-column: span 2; }
-  
-  button {
-    border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
-    height: 56px; cursor: pointer; background: #eef1f6; color: #555;
-    width: 100%; transition: 0.1s; display: flex; align-items: center; justify-content: center;
-  }
-  button.primary {
-    background: var(--primary-grad); color: white; font-size: 18px;
-    box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);
-  }
-  button:active { transform: scale(0.97); opacity: 0.9; }
+    .mode-switch-group {
+      background: #f1f5f9; padding: 5px; border-radius: 16px; display: flex;
+    }
+    .btn-check:checked + .btn-mode {
+      background-color: #fff; color: var(--primary-color);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05); font-weight: 700;
+    }
+    .btn-mode {
+      flex: 1; border: none; border-radius: 12px; padding: 10px;
+      color: var(--text-muted); font-size: 14px; font-weight: 500;
+      transition: all 0.2s;
+    }
+    .btn-mode:hover { color: var(--text-main); background: rgba(255,255,255,0.5); }
 
-  .section-title { font-size: 18px; font-weight: 800; margin: 25px 4px 10px 4px; color: #333; }
-  
-  .total-card { background: var(--primary-grad); color: white; text-align: center; }
-  .total-val { font-size: 36px; font-weight: 800; margin: 5px 0 15px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-  .total-stats {
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
-    background: rgba(255,255,255,0.2); border-radius: 10px; padding: 12px; backdrop-filter: blur(4px);
-  }
-  .stat-item { border-right: 1px solid rgba(255,255,255,0.3); }
-  .stat-item:last-child { border: none; }
-  .s-val { font-size: 18px; font-weight: 700; display: block; }
-  .s-lbl { font-size: 13px; opacity: 0.9; }
+    .search-suggestions {
+      position: absolute; top: calc(100% + 5px); left: 0; right: 0;
+      background: white; border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      z-index: 1000; max-height: 280px; overflow-y: auto; display: none;
+      border: 1px solid #e2e8f0; padding: 5px;
+    }
+    .suggestion-item {
+      padding: 12px 15px; border-radius: 10px; cursor: pointer; margin-bottom: 2px;
+    }
+    .suggestion-item:hover { background-color: #f8fafc; }
 
-  .floor-item {
-    padding: 18px; background: white; border-radius: 12px;
-    margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    cursor: pointer; border-left: 5px solid #764ba2;
-  }
-  .floor-item:active { background: #fafafa; }
-  .f-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .f-name { font-size: 20px; font-weight: 700; color: #333; }
-  .f-amount { font-size: 22px; font-weight: 800; color: #764ba2; }
-  .f-sub { font-size: 14px; color: #666; display: flex; justify-content: space-between; }
+    .preview-stage {
+      background: #334155;
+      border-radius: 32px; padding: 50px;
+      min-height: 700px; display: flex; justify-content: center; align-items: flex-start;
+      overflow: hidden; position: relative;
+      box-shadow: inset 0 0 80px rgba(0,0,0,0.4);
+      border: 6px solid rgba(255,255,255,0.1);
+    }
+    .paper-scaler { transform-origin: top center; transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1); }
+    
+    .paper-sheet { 
+      background: #fff; margin: 0 auto; 
+      box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6); 
+      position: relative; color: var(--inv-border); font-family: var(--print-font);
+      display: none; 
+    }
+    .paper-sheet.active { display: block; animation: popIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    
+    .fill-text { color: var(--fill-color); font-weight: 700; font-family: "Microsoft JhengHei", sans-serif; position: relative; z-index: 5; }
+    .fill-num { font-family: Consolas, monospace; letter-spacing: 1px; }
 
-  .back-btn { 
-    background: #e0e0e0; color: #333; height: 44px; width: auto; 
-    padding: 0 20px; margin-bottom: 15px; border-radius: 22px; 
-  }
+    .invoice-std { width: 840px; padding: 45px 55px; border: 2px solid var(--inv-border); }
+    
+    .inv-header-grid { 
+      display: grid; grid-template-columns: 80px 1fr 80px; align-items: end; 
+      border-bottom: 2px double var(--inv-border); padding-bottom: 12px; margin-bottom: 15px; 
+    }
+    .inv-track { font-size: 32px; font-weight: 900; line-height: 1; font-family: sans-serif; }
+    .inv-title-area { text-align: center; }
+    .inv-h1 { font-size: 38px; font-weight: 900; margin: 0; letter-spacing: 6px; }
+    .inv-ym { font-size: 20px; font-weight: bold; color: var(--fill-color); margin-top: 6px; letter-spacing: 2px; }
+    .inv-type { font-size: 16px; border: 1px solid var(--inv-border); padding: 4px 10px; justify-self: end; }
+    
+    .inv-date-row { text-align: center; font-size: 19px; margin: 12px 0; font-weight: 600; }
+    
+    .inv-row { display: flex; align-items: flex-end; margin-bottom: 8px; font-size: 21px; position: relative; }
+    .inv-label { width: 110px; font-weight: bold; text-align-last: justify; margin-right: 5px; }
+    .inv-line { 
+      flex-grow: 1; border-bottom: 1px solid var(--inv-border); min-height: 34px; 
+      padding-left: 10px; display: flex; align-items: center; 
+    }
 
-  .order-card {
-    background: white; border-radius: 12px; padding: 16px; margin-bottom: 15px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.06); border: 1px solid #eee;
-  }
-  .ord-header { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #eee; }
-  .ord-row { display: flex; justify-content: space-between; margin-bottom: 4px; align-items: baseline; }
-  .ord-id { font-weight: 800; font-size: 16px; color: #333; }
-  .ord-total { font-weight: 800; font-size: 18px; color: #764ba2; }
-  .ord-meta { font-size: 14px; color: #666; }
+    .addr-sub-row {
+      display: flex; justify-content: space-between; 
+      margin-left: 115px; font-size: 13px; color: #444; 
+      margin-top: -2px; pointer-events: none; padding-right: 15px;
+    }
 
-  .tbl-header {
-    display: flex; padding: 6px 0; border-bottom: 2px solid #f0f0f0;
-    font-size: 13px; color: #888; font-weight: bold; margin-bottom: 6px;
-  }
-  .tbl-row {
-    display: flex; padding: 8px 0; border-bottom: 1px solid #f9f9f9;
-    font-size: 14px; color: #333; align-items: center;
-  }
-  .tbl-row:last-child { border-bottom: none; }
+    .tax-grid { display: flex; border: 1px solid var(--inv-border); background: #fff; }
+    .tax-cell { width: 34px; height: 34px; border-right: 1px solid var(--inv-border); display: grid; place-items: center; font-size: 22px; color: var(--fill-color); font-weight: bold; }
+    .tax-cell:last-child { border-right: none; }
 
-  .c1 { width: 18%; font-size: 12px; color: #666; word-break: break-all; padding-right: 2px; }
-  .c2 { width: 34%; font-weight: 600; line-height: 1.3; padding-right: 4px; }
-  .c3 { width: 10%; text-align: center; }
-  .c4 { width: 18%; text-align: right; font-size: 13px; }
-  .c5 { width: 20%; text-align: right; font-weight: 700; }
-  .disc-txt { font-size: 12px; color: #e53935; text-align: right; margin-top: 2px; }
+    .inv-table { width: 100%; border-collapse: collapse; margin-top: 8px; border: 2px solid var(--inv-border); }
+    .inv-table th { border: 1px solid var(--inv-border); padding: 6px; font-size: 19px; font-weight: bold; height: 38px; background: rgba(0,0,0,0.02); }
+    .inv-table td { border: 1px solid var(--inv-border); padding: 6px; height: 48px; vertical-align: middle; text-align: center; font-size: 21px; }
+    
+    .inv-footer { display: grid; grid-template-columns: 1fr 240px; border: 2px solid var(--inv-border); border-top: none; }
+    .inv-f-main { display: flex; flex-direction: column; }
+    .inv-f-row { display: flex; border-bottom: 1px solid var(--inv-border); height: 42px; align-items: center; }
+    .inv-f-lbl { width: 140px; text-align: center; border-right: 1px solid var(--inv-border); font-size: 19px; line-height: 42px; background: rgba(0,0,0,0.02); }
+    .inv-f-val { flex-grow: 1; text-align: right; padding-right: 15px; font-size: 24px; font-weight: bold; }
+    
+    .tax-check-area { display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; height: 100%; font-size: 17px; }
+    .check-box { width: 16px; height: 16px; border: 1px solid var(--inv-border); margin: 0 6px; position: relative; }
+    .check-box.checked::after { content:'✔'; position: absolute; top:-6px; left:1px; color: var(--fill-color); font-size: 20px; font-weight: bold; }
 
-  #loading { 
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(255,255,255,0.9); z-index: 999; 
-    display: none; justify-content: center; align-items: center; flex-direction: column;
-  }
-  .spinner { width: 40px; height: 40px; border: 4px solid #eee; border-top-color: #764ba2; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
-  @keyframes spin { 100% { transform: rotate(360deg); } }
-</style>
+    .stamp-block { 
+        border-left: 2px solid var(--inv-border); display: flex; flex-direction: column; 
+        align-items: center; justify-content: center; font-size: 20px; background: rgba(0,0,0,0.02); 
+    }
+    .chi-row { 
+        border: 2px solid var(--inv-border); border-top: none; padding: 10px 15px; 
+        display: flex; align-items: center; justify-content: space-between; font-size: 19px; 
+    }
+    .chi-units { font-size: 14px; letter-spacing: 12px; margin-right: 20px; opacity: 0.7; }
+
+    .receipt-std { width: 820px; padding: 40px 50px; border: 3px solid var(--inv-border); background: #fff; }
+    
+    .rec-header-flex { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; width: 100%; border-bottom: none; }
+    .rec-title-wrap { flex-grow: 1; text-align: center; padding-bottom: 5px; margin-right: 20px; }
+    .rec-title { font-size: 40px; font-weight: 900; border-bottom: 3px double var(--inv-border); padding-bottom: 5px; letter-spacing: 2px; display: inline-block; white-space: nowrap; }
+    .rec-info-wrap { display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end; flex-shrink: 0; padding-bottom: 5px; }
+    .rec-date-text { font-size: 18px; font-weight: 600; margin-bottom: 8px; white-space: nowrap; }
+    .rec-tax-row { display: flex; align-items: center; justify-content: flex-end; }
+    .rec-table th { border: 1px solid var(--inv-border); background: transparent; padding: 8px; font-size: 20px; }
+    .rec-table td { border: 1px solid var(--inv-border); padding: 8px; height: 50px; text-align: center; font-size: 22px; }
+
+    .rec-footer { display: flex; justify-content: space-between; margin-top: 25px; height: 120px; }
+    .oval-stamp { width: 150px; height: 90px; border: 3px solid #d9534f; border-radius: 50%; color: #d9534f; display: grid; place-items: center; transform: rotate(-5deg); margin-top: 8px; font-weight: bold; font-size: 15px; }
+    .sq-stamp { width: 75px; height: 75px; border: 2px solid #d9534f; color: #d9534f; display: grid; place-items: center; font-weight: bold; margin-left: 10px; font-size: 18px; }
+
+    @media (max-width: 992px) {
+      .preview-stage { min-height: 400px; padding: 15px; }
+      .control-panel { position: static; margin-bottom: 30px; }
+    }
+  </style>
 </head>
 <body>
 
-<header>
-  <h2>美客麗爾</h2>
-  <div style="font-size: 14px; opacity: 0.9; margin-top: 5px;">銷售業績報表</div>
-</header>
+<div class="container-fluid p-0">
+  <div class="row g-0">
+    <div class="col-lg-4 p-4 p-xl-5">
+      <div class="control-panel">
+        <h3 class="panel-title"><i class="bi bi-receipt-cutoff fs-2 text-primary"></i> 發票小幫手</h3>
 
-<div class="container">
-  
-  <div class="card" id="queryCard">
-    <label class="input-label">開始日期</label>
-    <input type="date" id="startDate">
-    <label class="input-label">結束日期</label>
-    <input type="date" id="endDate">
-    
-    <div class="btn-grid">
-      <button class="primary btn-full" onclick="getReport()">🔍 查詢業績</button>
-      <button onclick="getToday()">今天</button>
-      <button onclick="getYesterday()">昨天</button>
-      <button class="btn-full" onclick="getThisMonth()">📅 本月累積</button>
-    </div>
-  </div>
+        <div class="mb-4">
+            <label class="form-label">選擇類型</label>
+            <div class="mode-switch-group">
+                <input type="radio" class="btn-check" name="billMode" id="mode3" value="3ply" checked onchange="switchMode()">
+                <label class="btn btn-mode" for="mode3">三聯式</label>
+                <input type="radio" class="btn-check" name="billMode" id="mode2" value="2ply" onchange="switchMode()">
+                <label class="btn btn-mode" for="mode2">二聯式</label>
+                <input type="radio" class="btn-check" name="billMode" id="modeR" value="receipt" onchange="switchMode()">
+                <label class="btn btn-mode" for="modeR">收據</label>
+            </div>
+        </div>
 
-  <div id="result"></div>
-  
-  <div class="card" id="chartCard" style="display:none;">
-    <canvas id="chart" height="250"></canvas>
-  </div>
-</div>
+        <div class="mb-3 position-relative">
+          <label class="form-label">公司名稱搜尋 <span class="badge bg-light text-dark border ms-1 fw-normal">自動帶入</span></label>
+          <div class="input-group">
+              <span class="input-group-text border-end-0"><i class="bi bi-search text-muted"></i></span>
+              <input type="text" class="form-control border-start-0 ps-0" id="inputName" placeholder="輸入名稱 (如: 台積電)..." autocomplete="off">
+          </div>
+          <div id="nameSuggestions" class="search-suggestions"></div>
+        </div>
 
-<div id="loading">
-  <div class="spinner"></div>
-  <div style="font-weight:bold; color:#555;">處理中...</div>
-</div>
+        <div class="mb-3">
+           <label class="form-label">統一編號 <span class="badge bg-light text-dark border ms-1 fw-normal">輸入8碼自動搜</span></label>
+           <input type="text" class="form-control fill-text font-monospace" id="inputTaxId" maxlength="8" placeholder="輸入統編...">
+           <div id="taxIdMsg" class="small text-primary mt-2 fw-bold d-flex align-items-center" style="min-height:20px;"></div>
+        </div>
 
-<script>
-// ===============================================
-// ✅ 設定：請填入您的 GAS 部署網址 (exec 結尾)
-// ===============================================
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzzeldQQQxhFEFTjlB250nRxSTyDzQzgEEPukZAbm4dzfpUAPK_g5W_RP30ScyNggHviw/exec";
+        <div class="row g-3 mb-3">
+          <div class="col-12">
+            <label class="form-label">銷售金額</label>
+            <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control fill-text fw-bold fs-5" id="amount" placeholder="0">
+            </div>
+          </div>
+        </div>
 
-let chart;
+        <div class="mb-3">
+          <label class="form-label">買受人抬頭</label>
+          <input type="text" class="form-control fill-text" id="buyerName">
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label">地址</label>
+          <input type="text" class="form-control fill-text" id="buyerAddr" placeholder="縣市鄉鎮路街...">
+        </div>
+        <div class="mb-4">
+          <label class="form-label">品項名稱</label>
+          <input type="text" class="form-control fill-text" id="itemName" value="專案服務費">
+        </div>
 
-// === API 呼叫函式 (取代 google.script.run) ===
-async function callApi(payload) {
-  try {
-    const res = await fetch(GAS_API_URL, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-    return await res.json();
-  } catch (e) {
-    console.error(e);
-    return { error: '連線錯誤，請檢查網路' };
-  }
-}
-
-// === 功能區 ===
-async function getReport() {
-  const s = document.getElementById("startDate").value;
-  const e = document.getElementById("endDate").value;
-  if(!s||!e) return alert("請選擇日期區間");
-  
-  showLoading(true);
-  const data = await callApi({ op: 'report', startDate: s, endDate: e });
-  renderReport(data);
-}
-
-function getToday() {
-  const t = new Date();
-  const todayStr = fmtDate(t);
-  document.getElementById("startDate").value = todayStr;
-  document.getElementById("endDate").value = todayStr;
-  getReport();
-}
-
-function getYesterday() {
-  const d = new Date(); d.setDate(d.getDate()-1);
-  const y = fmtDate(d);
-  document.getElementById("startDate").value = y;
-  document.getElementById("endDate").value = y;
-  getReport();
-}
-
-function getThisMonth() {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), 1);
-  const end = now;
-  
-  document.getElementById("startDate").value = fmtDate(start);
-  document.getElementById("endDate").value = fmtDate(end);
-  getReport();
-}
-
-function fmtDate(d) {
-    // 解決時區問題，確保日期準確
-    const offset = d.getTimezoneOffset() * 60000;
-    return new Date(d.getTime() - offset).toISOString().split('T')[0];
-}
-
-function showLoading(b) {
-  document.getElementById("loading").style.display = b ? "flex" : "none";
-}
-
-// === 渲染總表 ===
-function renderReport(data) {
-  showLoading(false);
-  if(data.error) {
-    document.getElementById("result").innerHTML = `<div class="card" style="text-align:center; padding:30px; color:red;">❌ ${data.error}</div>`;
-    return;
-  }
-  
-  const res = document.getElementById("result");
-  
-  // 1. 合計
-  let html = `<div class="section-title">總計概覽 (${data.start} ~ ${data.end})</div>`;
-  html += `
-    <div class="card total-card">
-      <div style="font-size:14px; opacity:0.9;">總銷售金額</div>
-      <div class="total-val">$${data.totalAmount.toLocaleString()}</div>
-      <div class="total-stats">
-        <div class="stat-item"><span class="s-val">${data.totalCount}</span><span class="s-lbl">筆數</span></div>
-        <div class="stat-item"><span class="s-val">${data.totalQty}</span><span class="s-lbl">件數</span></div>
-        <div class="stat-item"><span class="s-val">$${data.totalCount?Math.round(data.totalAmount/data.totalCount).toLocaleString():0}</span><span class="s-lbl">客單</span></div>
+        <div class="form-check form-switch d-flex align-items-center p-0 m-0 bg-light rounded-3 p-3 border">
+           <input class="form-check-input ms-0 me-3" type="checkbox" id="taxIncluded" checked onchange="calculate()">
+           <div class="d-flex flex-column">
+               <span class="fw-bold text-dark">金額已含稅</span>
+               <span class="small text-muted">系統自動回推未稅金額</span>
+           </div>
+        </div>
       </div>
     </div>
-  `;
-  
-  // 2. 門市列表
-  html += `<div class="section-title">門市明細</div>`;
-  const floors = Object.keys(data.floors);
-  if(floors.length === 0) {
-    html += `<div class="card" style="text-align:center; color:#999;">無資料</div>`;
-  } else {
-    floors.forEach(f => {
-      const d = data.floors[f];
-      const staff = d.staff && d.staff.length ? d.staff.join("、") : "—";
-      html += `
-        <div class="floor-item" onclick="showDetails('${f}','${data.start}','${data.end}')">
-          <div class="f-top">
-            <span class="f-name">${f}</span>
-            <span class="f-amount">$${d.total.toLocaleString()}</span>
-          </div>
-          <div class="f-sub">
-            <span>筆數 ${d.count} / 件數 ${d.qty}</span>
-            <span style="color:#764ba2; font-weight:bold;">查看明細 ᐳ</span>
-          </div>
-          <div style="margin-top:6px; font-size:13px; color:#888; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">人員：${staff}</div>
-        </div>
-      `;
-    });
-  }
-  res.innerHTML = html;
-  
-  document.getElementById("chartCard").style.display="block";
-  drawChart(data);
-}
 
-function drawChart(data){
-  const ctx = document.getElementById("chart").getContext("2d");
-  const lbls = Object.keys(data.floors);
-  const sales = lbls.map(k=>data.floors[k].total);
-  const qtys = lbls.map(k=>data.floors[k].qty);
-  
-  if(chart) chart.destroy();
-  chart = new Chart(ctx,{
-    type:"bar",
-    data:{
-      labels:lbls,
-      datasets:[
-        { label:"金額", data:sales, backgroundColor:"#667eea", borderRadius:6, yAxisID:'y' },
-        { label:"件數", data:qtys, type:"line", borderColor:"#ff7675", borderWidth:3, tension:0.3, yAxisID:'y1' }
-      ]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      scales:{
-        x:{ grid:{display:false}, ticks:{font:{size:13}} },
-        y:{ beginAtZero:true, ticks:{callback:v=>'$'+v/1000+'k'} },
-        y1:{ beginAtZero:true, position:'right', grid:{display:false} }
-      }
+    <div class="col-lg-8 p-4 p-xl-5">
+      <div class="preview-stage">
+        <div class="paper-scaler" id="paperScaler">
+          
+          <div id="tpl-3ply" class="template-wrap paper-sheet invoice-std">
+            <div class="inv-header-grid">
+              <div class="inv-track">AB</div>
+              <div class="inv-title-area">
+                <h1 class="inv-h1">統一發票（三聯式）</h1>
+                <div class="inv-ym" id="i3-ym"></div>
+              </div>
+              <div class="inv-type">存根聯</div>
+            </div>
+            <div class="inv-date-row">
+               中華民國 <span class="fill-text" id="i3-y"></span> 年 <span class="fill-text" id="i3-m"></span> 月 <span class="fill-text" id="i3-d"></span> 日
+            </div>
+            <div class="inv-row mt-2">
+              <span class="inv-label">買 受 人 ：</span>
+              <div class="inv-line fill-text fs-4" id="i3-buyer"></div>
+            </div>
+            <div class="inv-row">
+              <span class="inv-label">統一編號：</span>
+              <div class="tax-grid" id="i3-boxes"></div>
+            </div>
+            <div class="inv-row" style="margin-bottom:0;">
+              <span class="inv-label">地　　址：</span>
+              <div class="inv-line fill-text" id="i3-addr" style="font-size:16px;"></div>
+            </div>
+            <div class="addr-sub-row">
+               <span>縣市</span><span>鄉鎮市區</span><span>路街</span><span>段</span><span>巷</span><span>弄</span><span>號</span><span>樓</span><span>室</span>
+            </div>
+            <table class="inv-table">
+              <colgroup><col width="40%"><col width="10%"><col width="15%"><col width="20%"><col width="15%"></colgroup>
+              <thead><tr><th>品名</th><th>數量</th><th>單價</th><th>金額</th><th>備註</th></tr></thead>
+              <tbody>
+                <tr><td class="text-start fill-text" id="i3-item"></td><td class="fill-text">1</td><td class="text-end fill-text fill-num" id="i3-unit"></td><td class="text-end fill-text fill-num" id="i3-amt"></td><td></td></tr>
+                <tr><td colspan="5" style="padding:0; height: 150px; background: linear-gradient(to top right, transparent 49.5%, var(--inv-border) 49.5%, var(--inv-border) 50.5%, transparent 50.5%);"></td></tr>
+              </tbody>
+            </table>
+            <div class="inv-footer">
+              <div class="inv-f-main">
+                <div class="inv-f-row"><div class="inv-f-lbl">銷售額合計</div><div class="inv-f-val fill-text fill-num" id="i3-sales"></div></div>
+                <div class="inv-f-row">
+                   <div class="inv-f-lbl">營 業 稅</div>
+                   <div class="inv-f-val d-flex align-items-center justify-content-between">
+                     <div class="tax-check-area">
+                        <span class="check-box checked"></span>應稅
+                        <span class="check-box"></span>零稅率
+                        <span class="check-box"></span>免稅
+                     </div>
+                     <span class="fill-text fill-num" id="i3-tax"></span>
+                   </div>
+                </div>
+                <div class="inv-f-row" style="border:none;"><div class="inv-f-lbl">總 計</div><div class="inv-f-val fill-text fill-num" id="i3-total"></div></div>
+              </div>
+              <div class="stamp-block">
+                <div>統一發票</div><div style="color:var(--fill-color);">專用章</div>
+              </div>
+            </div>
+            <div class="chi-row">
+               <span>總計新臺幣 <span class="fill-text ms-3 fs-3" id="i3-chi">零元整</span></span>
+               <span class="chi-units">億仟佰拾萬仟佰拾元</span>
+            </div>
+          </div>
+
+          <div id="tpl-2ply" class="template-wrap paper-sheet invoice-std">
+            <div class="inv-header-grid">
+              <div class="inv-track">AB</div>
+              <div class="inv-title-area">
+                <h1 class="inv-h1">統一發票（二聯式）</h1>
+                <div class="inv-ym" id="i2-ym"></div>
+              </div>
+              <div class="inv-type">存根聯</div>
+            </div>
+            <div class="inv-date-row">
+               中華民國 <span class="fill-text" id="i2-y"></span> 年 <span class="fill-text" id="i2-m"></span> 月 <span class="fill-text" id="i2-d"></span> 日
+            </div>
+            <div class="inv-row mt-2">
+              <span class="inv-label">買 受 人 ：</span>
+              <div class="inv-line fill-text fs-4" id="i2-buyer"></div>
+            </div>
+            <div class="inv-row" style="margin-bottom:0;">
+              <span class="inv-label">地　　址：</span>
+              <div class="inv-line fill-text" id="i2-addr" style="font-size:16px;"></div>
+            </div>
+            <div class="addr-sub-row">
+               <span>縣市</span><span>鄉鎮市區</span><span>路街</span><span>段</span><span>巷</span><span>弄</span><span>號</span><span>樓</span><span>室</span>
+            </div>
+            <table class="inv-table">
+              <colgroup><col width="40%"><col width="10%"><col width="15%"><col width="20%"><col width="15%"></colgroup>
+              <thead><tr><th>品名</th><th>數量</th><th>單價</th><th>金額</th><th>備註</th></tr></thead>
+              <tbody>
+                <tr><td class="text-start fill-text" id="i2-item"></td><td class="fill-text">1</td><td class="text-end fill-text fill-num" id="i2-unit"></td><td class="text-end fill-text fill-num" id="i2-amt"></td><td></td></tr>
+                <tr><td colspan="5" style="padding:0; height: 150px; background: linear-gradient(to top right, transparent 49.5%, var(--inv-border) 49.5%, var(--inv-border) 50.5%, transparent 50.5%);"></td></tr>
+              </tbody>
+            </table>
+            <div class="inv-footer" style="height:auto;">
+              <div class="inv-f-main">
+                <div class="inv-f-row"><div class="inv-f-lbl">總 計</div><div class="inv-f-val fill-text fill-num" id="i2-total"></div></div>
+                <div style="height:40px; border-top:1px solid var(--inv-border); display:flex; align-items:center; padding-left:10px;">
+                   <span class="me-2 fw-bold">課 稅 別 :</span>
+                   <span class="check-box checked"></span><span class="me-3">應稅</span>
+                   <span class="check-box"></span><span class="me-3">零稅率</span>
+                   <span class="check-box"></span><span>免稅</span>
+                </div>
+              </div>
+              <div class="stamp-block">
+                <div>統一發票</div><div style="color:var(--fill-color);">專用章</div>
+              </div>
+            </div>
+            <div class="chi-row">
+               <span>總計新臺幣 <span class="fill-text ms-3 fs-3" id="i2-chi">零元整</span></span>
+               <span class="chi-units">億仟佰拾萬仟佰拾元</span>
+            </div>
+          </div>
+
+          <div id="tpl-receipt" class="template-wrap paper-sheet receipt-std">
+            <div class="rec-header-flex">
+              <div class="rec-title-wrap">
+                <div class="rec-title">免用統一發票收據</div>
+              </div>
+              <div class="rec-info-wrap">
+                <div class="rec-date-text">
+                  中華民國 <span class="fill-text" id="r-y"></span> 年 <span class="fill-text" id="r-m"></span> 月 <span class="fill-text" id="r-d"></span> 日
+                </div>
+                <div class="rec-tax-row">
+                  <span class="me-2 fw-bold" style="font-size:16px;">統一編號</span>
+                  <div class="tax-grid" id="r-boxes" style="margin-left:0;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="inv-row">
+              <span class="fw-bold me-2" style="font-size:20px;">買受人：</span>
+              <div class="inv-line fill-text fs-4" id="r-buyer"></div>
+            </div>
+            <div class="inv-row">
+              <span class="fw-bold me-2" style="font-size:20px;">地　址：</span>
+              <div class="inv-line" style="font-size:16px;">
+                <span class="text-danger ms-2">( 可以免填 )</span>
+              </div>
+            </div>
+            <table class="inv-table rec-table">
+               <thead><tr><th width="40%">品名</th><th width="10%">數量</th><th width="20%">單價</th><th width="20%">總價</th><th width="10%">備註</th></tr></thead>
+               <tbody>
+                <tr><td class="fill-text" id="r-item"></td><td class="fill-text">1</td><td class="fill-text fill-num" id="r-unit"></td><td class="fill-text fill-num" id="r-total"></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td></td></tr>
+              </tbody>
+            </table>
+            <div style="display: flex; align-items: center; font-size: 22px; padding: 10px 5px; border-bottom: 2px solid var(--inv-border);">
+               <span class="fw-bold me-3">合計新臺幣</span>
+               <span class="fill-text" id="r-chi">零元整</span>
+            </div>
+            <div class="rec-footer">
+              <div class="text-center pt-2 ps-4">
+                <div class="small fw-bold mb-1">收據專用章</div>
+                <div class="oval-stamp"><div>免用統一發票章</div><div class="small">(或店章)</div></div>
+              </div>
+              <div class="d-flex">
+                <div class="d-flex align-items-center justify-content-center border-start border-2 border-dark px-4 fs-5 fw-bold">銀貨兩訖</div>
+                <div class="d-flex flex-column align-items-center justify-content-center border-start border-2 border-dark px-3">
+                   <div class="small mb-2 fw-bold">負責人私章</div>
+                   <div class="sq-stamp">私章</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ==========================================
+  //  設定：請將下方的 URL 換成你的 GAS 部署網址
+  // ==========================================
+  const GAS_API_URL = "https://script.google.com/macros/s/你的_GAS_部署_ID/exec"; 
+
+  // --- 1. 搜尋功能 (已修改為 Fetch API) ---
+  let debounceTimer;
+  const nameInput = document.getElementById('inputName');
+  const suggestionsBox = document.getElementById('nameSuggestions');
+  const taxIdInput = document.getElementById('inputTaxId');
+  const taxIdMsg = document.getElementById('taxIdMsg');
+
+  // 名稱搜尋
+  nameInput.addEventListener('input', function() {
+    const val = this.value.trim();
+    clearTimeout(debounceTimer);
+    if(val.length < 2) { suggestionsBox.style.display = 'none'; return; }
+    
+    debounceTimer = setTimeout(() => {
+      // 修正: 改用 Fetch
+      const url = `${GAS_API_URL}?op=searchName&val=${encodeURIComponent(val)}`;
+      fetch(url)
+        .then(res => res.json())
+        .then(data => showSuggestions(data))
+        .catch(err => console.error("Error:", err));
+    }, 500);
+  });
+
+  // 統編搜尋
+  taxIdInput.addEventListener('input', function() {
+     const val = this.value;
+     fillBoxes(val); // 即時更新格子
+     if(val.length === 8) {
+       taxIdMsg.innerHTML = '<span class="spinner-border spinner-border-sm me-2 text-primary"></span> 查詢中...';
+       
+       // 修正: 改用 Fetch
+       const url = `${GAS_API_URL}?op=searchTaxId&val=${val}`;
+       fetch(url)
+         .then(res => res.json())
+         .then(res => {
+             if(res.status === 'success') {
+                taxIdMsg.innerHTML = '<i class="bi bi-check-circle-fill text-success me-1"></i> 已帶入: ' + res.name;
+                applyData({name: res.name, taxId: val, addr: res.addr});
+             } else {
+                taxIdMsg.innerHTML = '<i class="bi bi-x-circle-fill text-danger me-1"></i> ' + res.error;
+             }
+         })
+         .catch(err => {
+             taxIdMsg.innerHTML = '<i class="bi bi-x-circle-fill text-danger me-1"></i> 連線錯誤';
+         });
+     } else {
+       taxIdMsg.innerHTML = '';
+     }
+  });
+
+  function showSuggestions(res) {
+    suggestionsBox.innerHTML = '';
+    if (res.status === 'multiple') {
+      res.results.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        div.innerHTML = `<div class="fw-bold text-dark">${item.name}</div>
+                         <div class="small text-muted d-flex justify-content-between">
+                           <span><i class="bi bi-upc-scan me-1"></i>${item.taxId}</span>
+                           <span class="text-truncate" style="max-width:160px;">${item.addr}</span>
+                         </div>`;
+        div.onclick = () => applyData(item);
+        suggestionsBox.appendChild(div);
+      });
+      suggestionsBox.style.display = 'block';
+    } else {
+      suggestionsBox.style.display = 'none';
+    }
+  }
+
+  function applyData(item) {
+    document.getElementById('inputName').value = item.name;
+    document.getElementById('buyerName').value = item.name;
+    document.getElementById('inputTaxId').value = item.taxId;
+    document.getElementById('buyerAddr').value = item.addr;
+    suggestionsBox.style.display = 'none';
+    updateUI(); fillBoxes(item.taxId);
+  }
+
+  // --- 2. 核心邏輯 (計算與UI，無須變動) ---
+  window.onload = function() {
+    setToday();
+    initTaxBoxes(document.getElementById('i3-boxes'));
+    initTaxBoxes(document.getElementById('r-boxes'));
+    switchMode();
+    autoScale();
+  };
+
+  const inputs = ['buyerName', 'buyerAddr', 'itemName', 'amount', 'taxIncluded'];
+  inputs.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) {
+       el.addEventListener('input', () => { updateUI(); calculate(); });
+       el.addEventListener('change', () => { updateUI(); calculate(); });
     }
   });
-}
 
-// === 明細頁 (改用 API) ===
-async function showDetails(floor,start,end){
-  showLoading(true);
-  // 呼叫 API 取得明細
-  const orders = await callApi({ op: 'detail', floor: floor, startDate: start, endDate: end });
-  renderDetail(floor, orders, start, end);
-  showLoading(false);
-}
+  function switchMode() {
+    const mode = document.querySelector('input[name="billMode"]:checked').value;
+    document.querySelectorAll('.template-wrap').forEach(el => el.classList.remove('active'));
+    
+    if (mode === '3ply') document.getElementById('tpl-3ply').classList.add('active');
+    else if (mode === '2ply') document.getElementById('tpl-2ply').classList.add('active');
+    else document.getElementById('tpl-receipt').classList.add('active');
 
-function renderDetail(floor,orders,start,end){
-  document.getElementById("chartCard").style.display="none";
-  window.scrollTo(0,0);
-  
-  let html = `
-    <button class="back-btn" onclick="getReport()">⬅ 返回總表</button>
-    <div class="section-title" style="margin-top:0;">${floor}</div>
-    <div style="margin:-5px 5px 15px 5px; font-size:14px; color:#666;">${start} ~ ${end} (共 ${orders.length} 筆)</div>
-  `;
-
-  if(!orders || orders.length===0){
-    html+=`<div class="card" style="text-align:center; padding:30px;">無明細資料</div>`;
-    document.getElementById("result").innerHTML=html; return;
+    updateUI(); calculate();
+    setTimeout(autoScale, 50); 
   }
 
-  orders.forEach(o => {
-    const total = Math.round(o.total).toLocaleString();
-    
-    html += `<div class="order-card">`;
-    
-    html += `
-      <div class="ord-header">
-        <div class="ord-row">
-          <span class="ord-id">訂單：${o.id}</span>
-          <span class="ord-total">總計：${total}</span>
-        </div>
-        <div class="ord-meta">時間：${o.time}</div>
-        <div class="ord-meta">銷售：${o.staff||"—"} ${o.remark ? "｜ 備註："+o.remark : ""}</div>
-      </div>
-    `;
+  function updateUI() {
+    const buyer = document.getElementById('buyerName').value;
+    const addr = document.getElementById('buyerAddr').value;
+    const item = document.getElementById('itemName').value;
 
-    html += `
-      <div class="tbl-header">
-        <div class="c1">料號</div>
-        <div class="c2">商品</div>
-        <div class="c3">數量</div>
-        <div class="c4">單價</div>
-        <div class="c5">小計</div>
-      </div>
-    `;
-
-    html += `<div>`;
-    o.items.forEach(item => {
-      const qty = item.G || "";
-      const price = item.H || "";
-      const sub = item.I ? parseFloat(item.I).toLocaleString() : (item.I||"");
-      const disc = item.D ? parseFloat(item.D) : 0;
-      
-      html += `
-        <div class="tbl-row">
-          <div class="c1">${item.C||""}</div>
-          <div class="c2">${item.F||""}</div>
-          <div class="c3">${qty}</div>
-          <div class="c4">${price}</div>
-          <div class="c5">${sub}</div>
-        </div>
-      `;
-      if(disc) {
-        html += `<div class="disc-txt">NT：$${disc}</div>`;
-      }
+    ['i3', 'i2'].forEach(p => {
+      if(document.getElementById(p+'-buyer')) document.getElementById(p+'-buyer').innerText = buyer;
+      if(document.getElementById(p+'-addr')) document.getElementById(p+'-addr').innerText = addr;
+      if(document.getElementById(p+'-item')) document.getElementById(p+'-item').innerText = item;
     });
-    html += `</div></div>`;
-  });
+    document.getElementById('r-buyer').innerText = buyer;
+    document.getElementById('r-item').innerText = item;
+  }
 
-  document.getElementById("result").innerHTML = html;
-}
+  function calculate() {
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
+    const isInc = document.getElementById('taxIncluded').checked;
+    const mode = document.querySelector('input[name="billMode"]:checked').value;
+    
+    let sales=0, tax=0, total=0;
+    if (mode === '3ply') {
+      if (isInc) { sales = Math.round(amt/1.05); tax = amt - sales; total = amt; }
+      else { sales = amt; tax = Math.round(sales*0.05); total = sales+tax; }
+      setVals('i3', sales, sales, sales, tax, total, total);
+    } else if (mode === '2ply') {
+      total = isInc ? amt : Math.round(amt*1.05);
+      setVals('i2', total, total, null, null, total, total);
+    } else {
+      total = amt;
+      setVals('r', total, total, null, null, null, total);
+    }
+  }
+
+  function setVals(p, unit, amt, sales, tax, total, chiVal) {
+    if(document.getElementById(p+'-unit')) document.getElementById(p+'-unit').innerText = fmt(unit);
+    if(document.getElementById(p+'-amt')) document.getElementById(p+'-amt').innerText = fmt(amt);
+    if(sales!=null && document.getElementById(p+'-sales')) document.getElementById(p+'-sales').innerText = fmt(sales);
+    if(tax!=null && document.getElementById(p+'-tax')) document.getElementById(p+'-tax').innerText = fmt(tax);
+    if(total!=null && document.getElementById(p+'-total')) document.getElementById(p+'-total').innerText = fmt(total);
+    if(chiVal!=null && document.getElementById(p+'-chi')) document.getElementById(p+'-chi').innerText = toChi(chiVal);
+  }
+
+  function setToday() {
+    const d = new Date();
+    const y = d.getFullYear() - 1911;
+    const m = (d.getMonth() + 1).toString().padStart(2, '0');
+    const date = d.getDate().toString().padStart(2, '0');
+    const ymStr = y + "年 " + m + " 月份";
+    
+    ['i3', 'i2'].forEach(p => {
+       document.getElementById(p+'-ym').innerText = ymStr;
+       document.getElementById(p+'-y').innerText = y;
+       document.getElementById(p+'-m').innerText = m;
+       document.getElementById(p+'-d').innerText = date;
+    });
+    document.getElementById('r-y').innerText = y;
+    document.getElementById('r-m').innerText = m;
+    document.getElementById('r-d').innerText = date;
+  }
+
+  function initTaxBoxes(container) {
+    if(!container) return;
+    container.innerHTML = '';
+    for(let i=0; i<8; i++) {
+      const d = document.createElement('div');
+      d.className = 'tax-cell'; 
+      container.appendChild(d);
+    }
+  }
+  function fillBoxes(id) {
+    const chars = id.toString().split('');
+    [document.getElementById('i3-boxes'), document.getElementById('r-boxes')].forEach(box => {
+      if(!box) return;
+      Array.from(box.children).forEach((cell, i) => cell.innerText = chars[i] || '');
+    });
+  }
+  function fmt(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  function toChi(n) {
+    if (n === 0) return "零元整";
+    var unit = "仟佰拾億仟佰拾萬仟佰拾元角分"; var str = ""; n += "00";
+    var p = n.indexOf('.'); if (p >= 0) n = n.substring(0, p) + n.substr(p+1, 2);
+    unit = unit.substr(unit.length - n.length);
+    for (var i=0; i < n.length; i++) str += '零壹貳參肆伍陸柒捌玖'.charAt(n.charAt(i)) + unit.charAt(i);
+    return str.replace(/零(仟|佰|拾|角)/g, "零").replace(/(零)+/g, "零").replace(/零(萬|億|元)/g, "$1").replace(/(億)萬|壹(拾)/g, "$1$2").replace(/^元零?|零分/g, "").replace(/元$/g, "元整");
+  }
+  
+  function autoScale() {
+    const container = document.querySelector('.preview-stage');
+    const scaler = document.getElementById('paperScaler');
+    const activeSheet = document.querySelector('.template-wrap.active');
+    if(!activeSheet) return;
+    
+    const sheetWidth = activeSheet.offsetWidth; 
+    const containerWidth = container.offsetWidth - 100;
+    if (containerWidth < sheetWidth) {
+      const scale = containerWidth / sheetWidth;
+      scaler.style.transform = `scale(${scale})`;
+      container.style.height = (activeSheet.offsetHeight * scale + 150) + 'px';
+    } else {
+      scaler.style.transform = 'scale(1)';
+      container.style.height = 'auto';
+    }
+  }
+  window.addEventListener('resize', autoScale);
+  
+  document.addEventListener('click', (e) => {
+    if (!nameInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+      suggestionsBox.style.display = 'none';
+    }
+  });
 </script>
+
 </body>
 </html>
